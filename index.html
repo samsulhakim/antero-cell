@@ -56,7 +56,8 @@
         
         <!-- DASHBOARD SECTION -->
         <div id="dashboard" class="tab-content">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Row 1 Statistik -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                     <div class="flex items-center">
                         <div class="p-3 bg-blue-100 rounded-lg text-blue-600 mr-4"><i class="fas fa-tools fa-lg"></i></div>
@@ -90,6 +91,28 @@
                         <div>
                             <p class="text-sm text-slate-500 font-medium">Total Omzet</p>
                             <h3 id="stat-omzet-global" class="text-2xl font-bold">Rp 0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2 Statistik (Batal & Gagal) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center text-slate-500">
+                        <div class="p-3 bg-slate-100 rounded-lg mr-4"><i class="fas fa-times-circle fa-lg"></i></div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider">Total Batal</p>
+                            <h3 id="stat-batal" class="text-xl font-bold text-slate-800">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center text-rose-600">
+                        <div class="p-3 bg-rose-100 rounded-lg mr-4"><i class="fas fa-exclamation-triangle fa-lg"></i></div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider">Total Gagal Perbaikan</p>
+                            <h3 id="stat-gagal" class="text-xl font-bold text-rose-800">0</h3>
                         </div>
                     </div>
                 </div>
@@ -142,6 +165,7 @@
                         <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold">
                             <tr>
                                 <th class="px-6 py-4">Pelanggan / Unit</th>
+                                <th class="px-6 py-4">Kontak (HP)</th>
                                 <th class="px-6 py-4">Status Saat Ini</th>
                                 <th class="px-6 py-4">Biaya (Tagihan)</th>
                                 <th class="px-6 py-4 text-center">Aksi</th>
@@ -230,7 +254,29 @@
         </div>
     </div>
 
-    <!-- MODAL EDIT DATA (MENGELOLA BIAYA & STATUS) -->
+    <!-- MODAL KONFIRMASI NOTA -->
+    <div id="confirmNotaModal" class="modal">
+        <div class="modal-content shadow-2xl">
+            <div class="text-center py-4">
+                <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Simpan Berhasil!</h3>
+                <p class="text-slate-500 mb-8 px-4">Apakah Anda ingin mengirimkan **Nota Digital (WA)** kepada pelanggan sekarang?</p>
+                
+                <div class="flex flex-col space-y-3">
+                    <button id="btn-kirim-nota" class="w-full py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg flex items-center justify-center">
+                        <i class="fab fa-whatsapp mr-2 text-xl"></i> Ya, Kirim Nota ke WhatsApp
+                    </button>
+                    <button onclick="closeModal('confirmNotaModal'); switchTab('data-servis');" class="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold">
+                        Tidak, Simpan Saja
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT DATA -->
     <div id="editModal" class="modal">
         <div class="modal-content shadow-2xl">
             <div class="flex justify-between items-center mb-6">
@@ -274,7 +320,6 @@
                     </div>
                 </div>
 
-                <!-- Preview Total -->
                 <div class="flex items-center justify-between p-4 bg-slate-800 text-white rounded-xl">
                     <span class="text-sm font-medium opacity-70">Total Tagihan:</span>
                     <span id="edit-preview-total" class="text-xl font-bold">Rp 0</span>
@@ -335,8 +380,8 @@
 
         function updateReportTime() {
             const now = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' });
-            document.getElementById('report-timestamp').innerText = "Waktu Pembaruan: " + now;
-            document.getElementById('print-date-time').innerText = now;
+            if(document.getElementById('report-timestamp')) document.getElementById('report-timestamp').innerText = "Waktu Pembaruan: " + now;
+            if(document.getElementById('print-date-time')) document.getElementById('print-date-time').innerText = now;
         }
 
         function switchTab(id) {
@@ -394,7 +439,23 @@
             };
             dataServis.unshift(d);
             e.target.reset(); 
-            showToast("Unit dimasukkan ke antrean Antero Cell.");
+            
+            // Siapkan tombol WA di modal konfirmasi
+            const btnWA = document.getElementById('btn-kirim-nota');
+            btnWA.onclick = () => kirimNotaWA(d);
+            
+            document.getElementById('confirmNotaModal').style.display = 'block';
+        }
+
+        function kirimNotaWA(item) {
+            const pesan = `*NOTA SERVIS - ANTERO CELL*%0A-------------------------------------%0ANo. Antrean: *#${item.id}*%0ANama: ${item.pelanggan}%0AUnit: *${item.tipe}*%0AKeluhan: ${item.keluhan}%0AStatus: *${item.status}*%0A-------------------------------------%0AMohon simpan nota digital ini sebagai bukti pengambilan. Terima kasih telah mempercayakan servis Anda kepada kami. ✨`;
+            
+            // Format nomor HP agar diawali dengan 62
+            let phone = item.no_hp.replace(/[^0-9]/g, '');
+            if(phone.startsWith('0')) phone = '62' + phone.slice(1);
+            
+            window.open(`https://wa.me/${phone}?text=${pesan}`, '_blank');
+            closeModal('confirmNotaModal');
             switchTab('data-servis');
         }
 
@@ -438,14 +499,16 @@
             if(!tb || !rb) return;
             
             tb.innerHTML = ''; rb.innerHTML = '';
-            const pT = parseInt(document.getElementById('percent-toko').value);
-            const pX = parseInt(document.getElementById('percent-teknisi').value);
+            const pT = parseInt(document.getElementById('percent-toko').value || 60);
+            const pX = parseInt(document.getElementById('percent-teknisi').value || 40);
 
-            let sP=0, sS=0, totalOmzet=0, totalPart=0, totalToko=0, totalTek=0;
+            let sP=0, sS=0, sB=0, sG=0, totalOmzet=0, totalPart=0, totalToko=0, totalTek=0;
 
             dataServis.forEach(i => {
                 if(i.status === 'Diproses') sP++;
                 if(i.status === 'Selesai') sS++;
+                if(i.status === 'Batal') sB++;
+                if(i.status === 'Gagal') sG++;
                 
                 const totalTagihan = i.modal_part + i.jasa;
 
@@ -476,6 +539,12 @@
                         <div class="text-[10px] text-slate-500 uppercase font-medium">${i.tipe} - ${i.keluhan}</div>
                     </td>
                     <td class="px-6 py-4">
+                        <div class="flex items-center text-slate-600">
+                            <i class="fab fa-whatsapp text-green-500 mr-2"></i>
+                            <span class="font-medium">${i.no_hp}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
                         <span class="px-3 py-1 rounded-full text-[10px] font-bold status-${i.status.toLowerCase()} border border-black/5">
                             ${i.status.toUpperCase()}
                         </span>
@@ -492,12 +561,16 @@
             document.getElementById('stat-total').innerText = dataServis.length;
             document.getElementById('stat-proses').innerText = sP;
             document.getElementById('stat-selesai').innerText = sS;
+            document.getElementById('stat-batal').innerText = sB;
+            document.getElementById('stat-gagal').innerText = sG;
             document.getElementById('stat-omzet-global').innerText = formatIDR(totalOmzet);
 
-            document.getElementById('rep-omzet').innerText = formatIDR(totalOmzet);
-            document.getElementById('rep-total-part').innerText = formatIDR(totalPart);
-            document.getElementById('rep-profit-toko').innerText = formatIDR(totalToko);
-            document.getElementById('rep-profit-teknisi').innerText = formatIDR(totalTek);
+            if(document.getElementById('rep-omzet')) {
+                document.getElementById('rep-omzet').innerText = formatIDR(totalOmzet);
+                document.getElementById('rep-total-part').innerText = formatIDR(totalPart);
+                document.getElementById('rep-profit-toko').innerText = formatIDR(totalToko);
+                document.getElementById('rep-profit-teknisi').innerText = formatIDR(totalTek);
+            }
         }
 
         function filterTable() {
