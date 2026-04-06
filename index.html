@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antero Cell - Login & Manajemen</title>
+    <title>Antero Cell - Sistem Manajemen Servis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         
-        /* Status Colors */
         .status-pending { background-color: #fee2e2; color: #991b1b; }
         .status-proses { background-color: #fef3c7; color: #92400e; }
         .status-selesai { background-color: #dcfce7; color: #166534; }
         .status-diambil { background-color: #dbeafe; color: #1e40af; }
-        .status-batal { background-color: #f1f5f9; color: #475569; }
-        .status-gagal { background-color: #fca5a5; color: #7f1d1d; }
+        .status-batal { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .status-gagal { background-color: #7f1d1d; color: #ffffff; }
         
-        /* Modal & UI Elements */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: white; margin: 5% auto; padding: 25px; border-radius: 1.5rem; width: 95%; max-width: 550px; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); overflow-y: auto; }
+        .modal-content { background-color: white; margin: 2% auto; padding: 0; border-radius: 1.5rem; width: 95%; max-width: 650px; overflow: hidden; border: 1px solid #e2e8f0; }
         
-        .login-gradient {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        }
+        .login-gradient { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); }
 
         @media print {
-            nav, .tab-content:not(#laporan), button, .no-print, .settings-box, .ai-btn { display: none !important; }
+            nav, .tab-content:not(#laporan), button, .no-print, .settings-box, .modal { display: none !important; }
             body { background: white; }
             .tab-content { display: block !important; padding: 0 !important; margin: 0 !important; }
-            .print-header { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
         }
-        .print-header { display: none; }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -42,293 +39,299 @@
         <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-8 text-center border-b border-slate-100">
                 <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
-                    <i class="fas fa-user-shield"></i>
+                    <i class="fas fa-tools"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-800">Admin Antero Cell</h1>
-                <p class="text-slate-500 text-sm mt-1 font-medium">Silakan login untuk akses sistem</p>
+                <h1 class="text-2xl font-bold text-slate-800">Antero Cell Admin</h1>
+                <p class="text-slate-500 text-sm mt-1">Sistem Manajemen Servis & Inventori</p>
             </div>
             <div class="p-8">
                 <form onsubmit="handleLogin(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-widest">Username</label>
-                        <div class="relative">
-                            <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                            <input type="text" id="username" placeholder="Masukkan username" required class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                        </div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Username</label>
+                        <input type="text" id="username" placeholder="admin" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-widest">Password</label>
-                        <div class="relative">
-                            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                            <input type="password" id="password" placeholder="••••••••" required class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                        </div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Password</label>
+                        <input type="password" id="password" placeholder="••••" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <div id="login-error" class="hidden bg-rose-50 text-rose-600 text-xs p-3 rounded-lg font-bold">
-                        <i class="fas fa-exclamation-circle mr-1"></i> Username atau Password salah!
-                    </div>
-                    <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg flex items-center justify-center">
-                        Masuk Sekarang <i class="fas fa-arrow-right ml-2 text-xs"></i>
-                    </button>
+                    <div id="login-error" class="hidden text-rose-500 text-xs font-bold text-center">Data login tidak valid!</div>
+                    <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">Login</button>
                 </form>
-                <div class="mt-6 text-center">
-                    <p class="text-slate-400 text-[10px] uppercase font-bold tracking-tighter">Powered by Gemini Engine</p>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
+    <!-- MAIN APP -->
     <div id="main-app" class="hidden">
-        <nav class="bg-blue-600 text-white shadow-lg sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-mobile-alt text-2xl"></i>
-                        <span class="font-bold text-xl tracking-tight">Antero Cell ✨</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="hidden md:flex items-baseline space-x-4">
-                            <button onclick="switchTab('dashboard')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Dashboard</button>
-                            <button onclick="switchTab('data-servis')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Data Servis</button>
-                            <button onclick="switchTab('laporan')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Laporan Keuangan</button>
-                        </div>
-                        <button onclick="handleLogout()" class="bg-rose-500 hover:bg-rose-600 px-3 py-2 rounded-lg text-xs font-bold transition">
-                            <i class="fas fa-power-off mr-1"></i> Logout
-                        </button>
-                    </div>
+        <nav class="bg-blue-700 text-white shadow-lg sticky top-0 z-50 no-print">
+            <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white p-1.5 rounded-lg text-blue-700"><i class="fas fa-mobile-screen-button"></i></div>
+                    <span class="font-bold text-lg">Antero Cell</span>
+                </div>
+                <div class="flex items-center space-x-1 md:space-x-4">
+                    <button onclick="switchTab('dashboard')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-800 uppercase">Home</button>
+                    <button onclick="switchTab('data-servis')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-800 uppercase">Servis</button>
+                    <button onclick="switchTab('buku-kontak')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-800 uppercase">Kontak</button>
+                    <button onclick="switchTab('laporan')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-800 uppercase">Laporan</button>
+                    <button onclick="handleLogout()" class="ml-2 text-rose-300 hover:text-white transition"><i class="fas fa-power-off"></i></button>
                 </div>
             </div>
         </nav>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- DASHBOARD SECTION -->
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- DASHBOARD -->
             <div id="dashboard" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex items-center">
-                            <div class="p-3 bg-blue-100 rounded-lg text-blue-600 mr-4"><i class="fas fa-tools fa-lg"></i></div>
-                            <div><p class="text-sm text-slate-500 font-medium">Total Servis</p><h3 id="stat-total" class="text-2xl font-bold">0</h3></div>
-                        </div>
+                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Total Antrean</p>
+                        <h3 id="stat-total" class="text-xl font-bold text-slate-800">0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex items-center text-amber-600">
-                            <div class="p-3 bg-amber-100 rounded-lg mr-4"><i class="fas fa-clock fa-lg"></i></div>
-                            <div><p class="text-sm text-slate-500 font-medium">Proses</p><h3 id="stat-proses" class="text-2xl font-bold">0</h3></div>
-                        </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-amber-500 uppercase">Sedang Proses</p>
+                        <h3 id="stat-proses" class="text-xl font-bold text-amber-600">0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex items-center text-green-600">
-                            <div class="p-3 bg-green-100 rounded-lg mr-4"><i class="fas fa-check-circle fa-lg"></i></div>
-                            <div><p class="text-sm text-slate-500 font-medium">Ready</p><h3 id="stat-selesai" class="text-2xl font-bold">0</h3></div>
-                        </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-green-500 uppercase">Ready/Selesai</p>
+                        <h3 id="stat-selesai" class="text-xl font-bold text-green-600">0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex items-center text-emerald-600">
-                            <div class="p-3 bg-emerald-100 rounded-lg mr-4"><i class="fas fa-wallet fa-lg"></i></div>
-                            <div><p class="text-sm text-slate-500 font-medium">Total Omzet</p><h3 id="stat-omzet-global" class="text-2xl font-bold text-emerald-700">Rp 0</h3></div>
-                        </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-500 uppercase">Batal</p>
+                        <h3 id="stat-batal" class="text-xl font-bold text-slate-600">0</h3>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex items-center text-slate-500">
-                            <div class="p-3 bg-slate-100 rounded-lg mr-4"><i class="fas fa-times-circle fa-lg"></i></div>
-                            <div><p class="text-xs font-bold uppercase tracking-wider">Total Batal</p><h3 id="stat-batal" class="text-xl font-bold text-slate-800">0</h3></div>
-                        </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-rose-600 uppercase">Gagal Servis</p>
+                        <h3 id="stat-gagal" class="text-xl font-bold text-rose-700">0</h3>
                     </div>
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex items-center text-rose-600">
-                            <div class="p-3 bg-rose-100 rounded-lg mr-4"><i class="fas fa-exclamation-triangle fa-lg"></i></div>
-                            <div><p class="text-xs font-bold uppercase tracking-wider">Total Gagal</p><h3 id="stat-gagal" class="text-xl font-bold text-rose-800">0</h3></div>
-                        </div>
+                    <div class="bg-blue-600 p-4 rounded-2xl shadow-md border border-blue-700">
+                        <p class="text-[9px] font-bold text-blue-100 uppercase">Omzet Lunas</p>
+                        <h3 id="stat-omzet-global" class="text-lg font-bold text-white truncate">Rp 0</h3>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                        <div class="flex items-center mb-6"><i class="fas fa-plus-circle text-blue-600 mr-3 text-xl"></i><h2 class="text-xl font-bold">Input Servis Baru</h2></div>
-                        <form onsubmit="handleFormSubmit(event)" class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="text" name="pelanggan" placeholder="Nama Pelanggan" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                <input type="tel" name="no_hp" placeholder="No HP (WA)" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="text" name="tipe" placeholder="Merek/Tipe HP" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                <input type="text" name="keluhan" placeholder="Keluhan Utama" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center space-x-2"><i class="fas fa-save"></i><span>Simpan ke Antrean</span></button>
-                        </form>
-                    </div>
-                    <div class="bg-blue-600 p-8 rounded-2xl shadow-xl text-white relative overflow-hidden flex flex-col justify-center items-center text-center">
-                        <h2 class="text-2xl font-bold mb-2">Halo, Admin Antero! 👋</h2>
-                        <p class="text-blue-100 text-sm mb-6 max-w-xs">Pastikan data modal part diisi dengan jujur agar bagi hasil teknisi tetap akurat.</p>
-                        <i class="fas fa-user-cog absolute -right-4 -bottom-4 text-9xl text-white opacity-10"></i>
-                    </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 max-w-2xl mx-auto">
+                    <h2 class="text-xl font-bold mb-6 flex items-center"><i class="fas fa-plus-circle text-blue-600 mr-3"></i>Input Unit Servis</h2>
+                    <form onsubmit="handleFormSubmit(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="pelanggan" placeholder="Nama Pelanggan" required class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="tel" name="no_hp" placeholder="Nomor WA (08...)" required class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="tipe" placeholder="Merk & Tipe HP" required class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" name="keluhan" placeholder="Kerusakan / Keluhan" required class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition">Simpan Antrean</button>
+                    </form>
                 </div>
             </div>
 
-            <!-- DATA SERVIS SECTION -->
+            <!-- DATA SERVIS -->
             <div id="data-servis" class="tab-content hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-6 border-b flex justify-between items-center bg-white">
-                        <h2 class="text-xl font-bold text-slate-800">Manajemen Unit Servis</h2>
-                        <input type="text" id="search" onkeyup="filterTable()" placeholder="Cari Pelanggan..." class="px-4 py-2 border rounded-lg text-sm outline-none w-64 ring-1 ring-slate-200">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b flex flex-col md:flex-row justify-between items-center gap-4">
+                        <h2 class="text-xl font-bold">Monitor Pekerjaan</h2>
+                        <input type="text" id="search" onkeyup="filterTable()" placeholder="Cari nama/tipe..." class="px-4 py-2 border rounded-xl text-sm w-full md:w-64 outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <div class="overflow-x-auto"><table class="w-full text-left" id="servis-table"><thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold"><tr><th class="px-6 py-4">Pelanggan / Unit</th><th class="px-6 py-4">Kontak</th><th class="px-6 py-4">Status</th><th class="px-6 py-4">Tagihan</th><th class="px-6 py-4 text-center">Aksi</th></tr></thead><tbody id="table-body" class="divide-y divide-slate-100 text-sm"></tbody></table></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b">
+                                <tr>
+                                    <th class="px-6 py-4">Unit & Detail</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Estimasi Tagihan</th>
+                                    <th class="px-6 py-4 text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- LAPORAN SECTION -->
+            <!-- BUKU KONTAK -->
+            <div id="buku-kontak" class="tab-content hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b">
+                        <h2 class="text-xl font-bold">Database Kontak Pelanggan</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold border-b">
+                                <tr>
+                                    <th class="px-6 py-4">Nama</th>
+                                    <th class="px-6 py-4">WhatsApp</th>
+                                    <th class="px-6 py-4">Riwayat Unit</th>
+                                    <th class="px-6 py-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kontak-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAPORAN -->
             <div id="laporan" class="tab-content hidden">
-                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="text-2xl font-bold">Bagi Hasil & Laba</h2>
-                        <div class="flex space-x-3 no-print">
-                            <button onclick="window.print()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg border text-sm font-bold"><i class="fas fa-print mr-2"></i> Cetak PDF</button>
-                        </div>
+                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-8 no-print">
+                        <h2 class="text-2xl font-bold">Rekap Laba Rugi</h2>
+                        <button onclick="window.print()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">Ekspor PDF</button>
                     </div>
-                    <div class="settings-box mb-8 p-5 bg-slate-50 border rounded-xl flex items-center gap-6 no-print">
-                        <span class="font-bold text-slate-700 text-sm">Bagi Hasil Jasa:</span>
-                        <div class="flex items-center space-x-4">
-                            <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border">
-                                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">Toko</label>
-                                <input type="number" id="percent-toko" value="60" oninput="adjustPercent('toko')" class="w-12 text-center font-bold text-blue-600 outline-none"><span class="font-bold text-slate-400">%</span>
-                            </div>
-                            <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border">
-                                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">Teknisi</label>
-                                <input type="number" id="percent-teknisi" value="40" oninput="adjustPercent('teknisi')" class="w-12 text-center font-bold text-orange-600 outline-none"><span class="font-bold text-slate-400">%</span>
-                            </div>
-                        </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="p-4 bg-slate-50 rounded-2xl border"><p class="text-[9px] font-bold text-slate-400 uppercase">Omzet Masuk</p><h4 id="rep-omzet" class="text-lg font-bold">Rp 0</h4></div>
+                        <div class="p-4 bg-rose-50 rounded-2xl border"><p class="text-[9px] font-bold text-rose-400 uppercase">Belanja Part</p><h4 id="rep-total-part" class="text-lg font-bold">Rp 0</h4></div>
+                        <div class="p-4 bg-indigo-50 rounded-2xl border"><p class="text-[9px] font-bold text-indigo-400 uppercase">Laba Bersih Toko</p><h4 id="rep-profit-toko" class="text-lg font-bold">Rp 0</h4></div>
+                        <div class="p-4 bg-orange-50 rounded-2xl border"><p class="text-[9px] font-bold text-orange-400 uppercase">Fee Teknisi</p><h4 id="rep-profit-teknisi" class="text-lg font-bold">Rp 0</h4></div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="p-5 bg-emerald-50 rounded-xl border border-emerald-100"><p class="text-emerald-600 text-[10px] font-bold uppercase mb-1">Total Omzet</p><h4 id="rep-omzet" class="text-xl font-bold">Rp 0</h4></div>
-                        <div class="p-5 bg-rose-50 rounded-xl border border-rose-100"><p class="text-rose-600 text-[10px] font-bold uppercase mb-1">Total Part</p><h4 id="rep-total-part" class="text-xl font-bold">Rp 0</h4></div>
-                        <div class="p-5 bg-indigo-50 rounded-xl border border-indigo-100"><p class="text-indigo-600 text-[10px] font-bold uppercase mb-1">Profit Toko</p><h4 id="rep-profit-toko" class="text-xl font-bold">Rp 0</h4></div>
-                        <div class="p-5 bg-orange-50 rounded-xl border border-orange-100"><p class="text-orange-600 text-[10px] font-bold uppercase mb-1">Jasa Teknisi</p><h4 id="rep-profit-teknisi" class="text-xl font-bold">Rp 0</h4></div>
+
+                    <div class="overflow-hidden border rounded-2xl">
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="px-6 py-3 font-bold">UNIT & DETAIL</th>
+                                    <th class="px-6 py-3 font-bold">BIAYA PART</th>
+                                    <th class="px-6 py-3 font-bold">HASIL TOKO (60%)</th>
+                                    <th class="px-6 py-3 font-bold text-right">HASIL TEKNISI (40%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
                     </div>
-                    <div class="overflow-hidden border rounded-xl"><table class="w-full text-left"><thead class="bg-slate-50"><tr><th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase">Unit</th><th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase">Modal Part</th><th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase">Jasa</th><th class="px-6 py-3 text-[10px] font-bold text-indigo-600 uppercase">Toko (<span class="toko-pct-label">60</span>%)</th><th class="px-6 py-3 text-[10px] font-bold text-orange-600 uppercase text-right">Teknisi (<span class="tek-pct-label">40</span>%)</th></tr></thead><tbody id="report-body" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL EDIT DATA (DENGAN LABEL NAMA FORM) -->
-    <div id="editModal" class="modal">
-        <div class="modal-content shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
+    <!-- MODAL DETAIL RIWAYAT -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="bg-blue-600 p-6 text-white flex justify-between items-center">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-800">Update Status & Biaya</h3>
-                    <p id="edit-pelanggan-name" class="text-sm text-slate-500 font-medium"></p>
+                    <h3 class="text-lg font-bold">Detail Pekerjaan</h3>
+                    <p id="det-id" class="text-xs opacity-80"></p>
                 </div>
-                <button onclick="closeModal('editModal')" class="text-3xl text-slate-400 hover:text-slate-600 transition">&times;</button>
+                <button onclick="closeModal('detailModal')" class="text-2xl">&times;</button>
             </div>
-            <form onsubmit="saveEdit(event)" class="space-y-4">
+            <div class="p-6 space-y-6">
+                <div class="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-id-card"></i></div>
+                    <div class="flex-1">
+                        <h4 id="det-pelanggan" class="font-bold text-slate-800">-</h4>
+                        <p id="det-wa" class="text-xs text-emerald-600 font-bold tracking-wide">-</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="det-status" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase">-</span>
+                        <p id="det-tgl" class="text-[10px] text-slate-400 mt-1">-</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Identifikasi Unit</h5>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 border rounded-xl bg-white shadow-sm">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold">Model Unit</p>
+                            <p id="det-tipe" class="font-bold text-sm text-slate-700">-</p>
+                        </div>
+                        <div class="p-3 border rounded-xl bg-white shadow-sm">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold">Kerusakan Awal</p>
+                            <p id="det-keluhan" class="font-bold text-sm text-slate-700">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Daftar Penggantian Part</h5>
+                    <div id="det-parts-list" class="space-y-2 max-h-40 overflow-y-auto custom-scroll pr-2"></div>
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100">
+                        <span class="text-xs font-bold text-blue-800">Biaya Jasa</span>
+                        <span id="det-jasa" class="font-bold text-blue-800">-</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t flex justify-between items-center">
+                    <div>
+                        <p class="text-[9px] text-slate-400 uppercase font-bold">Total Pembayaran</p>
+                        <h4 id="det-total" class="text-xl font-bold text-emerald-700">Rp 0</h4>
+                    </div>
+                    <button onclick="closeModal('detailModal')" class="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm">Kembali</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UPDATE STATUS -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold">Perbarui Kondisi Unit</h3>
+                <button onclick="closeModal('editModal')" class="text-2xl">&times;</button>
+            </div>
+            <form onsubmit="saveEdit(event)" class="p-6 space-y-4">
                 <input type="hidden" id="edit-id">
-                
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1 tracking-wider">Status Perbaikan</label>
-                    <select id="edit-status" class="w-full px-4 py-2 border rounded-lg font-bold text-blue-800 outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Status Saat Ini</label>
+                    <select id="edit-status" class="w-full px-4 py-3 border rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="Pending">Antrean</option>
-                        <option value="Diproses">Diproses</option>
-                        <option value="Selesai">Ready</option>
-                        <option value="Diambil">Diambil (Lunas)</option>
-                        <option value="Batal">Batal</option>
-                        <option value="Gagal">Gagal</option>
+                        <option value="Diproses">Sedang Dikerjakan</option>
+                        <option value="Selesai">Ready / Menunggu Diambil</option>
+                        <option value="Diambil">Lunas / Sudah Diambil</option>
+                        <option value="Batal">Dibatalkan Pelanggan</option>
+                        <option value="Gagal">Gagal Perbaiki (Matot/Parah)</option>
                     </select>
                 </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1 tracking-wider">Suku Cadang / Part</label>
-                        <input type="text" id="edit-nama-part" placeholder="Contoh: LCD" class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition">
+                <div class="border-t pt-4">
+                    <div class="flex justify-between mb-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Sparepart Masuk</label>
+                        <button type="button" onclick="addPartRow()" class="text-xs text-blue-600 font-bold">+ Input Part</button>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1 tracking-wider">Harga Modal (Rp)</label>
-                        <input type="number" id="edit-modal" placeholder="0" class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition">
-                    </div>
+                    <div id="parts-container" class="space-y-2"></div>
                 </div>
-
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1 tracking-wider">Biaya Jasa Teknisi (Rp)</label>
-                    <input type="number" id="edit-jasa" placeholder="0" class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Upah Jasa (Rp)</label>
+                    <input type="number" id="edit-jasa" placeholder="0" class="w-full px-4 py-3 border rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-
-                <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition transform active:scale-[0.98]">
-                    Simpan Perubahan
-                </button>
+                <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg transition">Simpan Laporan</button>
             </form>
         </div>
     </div>
 
-    <!-- TOAST & MODAL KONFIRMASI -->
-    <div id="confirmNotaModal" class="modal">
-        <div class="modal-content text-center py-8">
-            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fab fa-whatsapp"></i></div>
-            <h3 class="text-xl font-bold">Berhasil Disimpan!</h3>
-            <p class="text-slate-500 mb-6 mt-2">Kirim nota digital ke WhatsApp pelanggan?</p>
-            <div class="flex flex-col space-y-2">
-                <button id="btn-kirim-nota" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition">Ya, Kirim Sekarang</button>
-                <button onclick="closeModal('confirmNotaModal'); switchTab('data-servis');" class="w-full py-2 text-slate-400 font-bold hover:text-slate-600">Nanti Saja</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-6 py-3 rounded-2xl z-[200]">
-        <span id="toast-msg" class="text-sm font-bold"></span>
-    </div>
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-xs font-bold opacity-0 transition-all duration-300 pointer-events-none z-[300]"></div>
 
     <script>
-        const AUTH_CONFIG = { u: 'admin', p: '1234' };
-
+        const formatIDR = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+        
         let dataServis = [
-            { id: '1001', pelanggan: 'Fadhil Pratama', no_hp: '08128899223', tipe: 'iPhone 13', keluhan: 'Face ID Mati', nama_part: 'Flex IR', modal_part: 350000, jasa: 450000, status: 'Diambil', tgl: new Date() }
+            { id: '1201', pelanggan: 'Budi Santoso', no_hp: '08129988112', tipe: 'Xiaomi Note 10', keluhan: 'Ganti LCD', parts: [{ nama: 'LCD Original', modal: 350000 }], jasa: 150000, status: 'Diambil', tgl: new Date() },
+            { id: '1202', pelanggan: 'Siska Amelia', no_hp: '08571122334', tipe: 'iPhone XR', keluhan: 'Mati Total', parts: [], jasa: 0, status: 'Gagal', tgl: new Date() },
+            { id: '1203', pelanggan: 'Rudi', no_hp: '08139900223', tipe: 'Samsung S20', keluhan: 'Baterai Kembung', parts: [], jasa: 0, status: 'Batal', tgl: new Date() }
         ];
 
         function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            const err = document.getElementById('login-error');
-
-            if (u === AUTH_CONFIG.u && p === AUTH_CONFIG.p) {
+            if(document.getElementById('username').value === 'admin' && document.getElementById('password').value === '1234') {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-                localStorage.setItem('antero_logged_in', 'true');
+                localStorage.setItem('antero_auth_v2', 'true');
                 renderData();
-                showToast("Selamat Datang, Admin!");
             } else {
-                err.classList.remove('hidden');
-                setTimeout(() => err.classList.add('hidden'), 3000);
+                document.getElementById('login-error').classList.remove('hidden');
             }
         }
 
-        function handleLogout() {
-            localStorage.removeItem('antero_logged_in');
-            location.reload();
-        }
-
-        function checkAuth() {
-            if (localStorage.getItem('antero_logged_in') === 'true') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                renderData();
-            }
-        }
-
-        const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+        function handleLogout() { localStorage.removeItem('antero_auth_v2'); location.reload(); }
 
         function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             renderData();
         }
 
         function showToast(msg) {
             const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+            t.innerText = msg;
+            t.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2500);
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -337,34 +340,38 @@
             e.preventDefault();
             const f = new FormData(e.target);
             const d = {
-                id: Math.floor(1000 + Math.random() * 9000),
-                pelanggan: f.get('pelanggan'), no_hp: f.get('no_hp'), 
-                tipe: f.get('tipe'), keluhan: f.get('keluhan'), 
-                nama_part: '', modal_part: 0, jasa: 0, status: 'Pending', tgl: new Date()
+                id: Math.floor(1000 + Math.random() * 8999).toString(),
+                pelanggan: f.get('pelanggan'), no_hp: f.get('no_hp'),
+                tipe: f.get('tipe'), keluhan: f.get('keluhan'),
+                parts: [], jasa: 0, status: 'Pending', tgl: new Date()
             };
             dataServis.unshift(d);
             e.target.reset();
-            document.getElementById('btn-kirim-nota').onclick = () => kirimNotaWA(d);
-            document.getElementById('confirmNotaModal').style.display = 'block';
+            showToast("Antrean Baru Berhasil Disimpan");
+            switchTab('data-servis');
         }
 
-        function kirimNotaWA(item) {
-            const pesan = `*NOTA ANTERO CELL*%0AID: #${item.id}%0ANama: ${item.pelanggan}%0AUnit: ${item.tipe}%0AKeluhan: ${item.keluhan}%0AStatus: ${item.status}%0A-----------------%0ASimpan nota ini untuk bukti pengambilan.`;
-            let phone = item.no_hp.replace(/[^0-9]/g, '');
-            if(phone.startsWith('0')) phone = '62' + phone.slice(1);
-            window.open(`https://wa.me/${phone}?text=${pesan}`, '_blank');
-            closeModal('confirmNotaModal');
-            switchTab('data-servis');
+        function addPartRow(nama = '', modal = '') {
+            const container = document.getElementById('parts-container');
+            const div = document.createElement('div');
+            div.className = "flex gap-2 items-center";
+            div.innerHTML = `
+                <input type="text" placeholder="Nama Part" value="${nama}" class="part-name flex-1 px-3 py-2 border rounded-lg text-xs outline-none">
+                <input type="number" placeholder="Modal" value="${modal}" class="part-modal w-24 px-3 py-2 border rounded-lg text-xs outline-none">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 p-1"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
         }
 
         function openEdit(id) {
             const i = dataServis.find(x => x.id == id);
             document.getElementById('edit-id').value = i.id;
-            document.getElementById('edit-pelanggan-name').innerText = i.pelanggan;
             document.getElementById('edit-status').value = i.status;
-            document.getElementById('edit-nama-part').value = i.nama_part;
-            document.getElementById('edit-modal').value = i.modal_part;
             document.getElementById('edit-jasa').value = i.jasa;
+            const container = document.getElementById('parts-container');
+            container.innerHTML = '';
+            i.parts.forEach(p => addPartRow(p.nama, p.modal));
+            if(i.parts.length === 0) addPartRow();
             document.getElementById('editModal').style.display = 'block';
         }
 
@@ -372,59 +379,133 @@
             e.preventDefault();
             const id = document.getElementById('edit-id').value;
             const idx = dataServis.findIndex(x => x.id == id);
+            const names = document.querySelectorAll('.part-name');
+            const modals = document.querySelectorAll('.part-modal');
+            const newParts = [];
+            names.forEach((inp, i) => {
+                const n = inp.value.trim();
+                const m = parseInt(modals[i].value) || 0;
+                if(n) newParts.push({ nama: n, modal: m });
+            });
             dataServis[idx].status = document.getElementById('edit-status').value;
-            dataServis[idx].nama_part = document.getElementById('edit-nama-part').value;
-            dataServis[idx].modal_part = parseInt(document.getElementById('edit-modal').value) || 0;
+            dataServis[idx].parts = newParts;
             dataServis[idx].jasa = parseInt(document.getElementById('edit-jasa').value) || 0;
             closeModal('editModal');
-            showToast("Data Berhasil Diupdate!");
+            showToast("Status Unit Diperbarui");
             renderData();
         }
 
-        function adjustPercent(source) {
-            const t = document.getElementById('percent-toko');
-            const x = document.getElementById('percent-teknisi');
-            if(source === 'toko') x.value = 100 - t.value; else t.value = 100 - x.value;
-            document.querySelectorAll('.toko-pct-label').forEach(el => el.innerText = t.value);
-            document.querySelectorAll('.tek-pct-label').forEach(el => el.innerText = x.value);
-            renderData();
+        function viewDetail(id) {
+            const i = dataServis.find(x => x.id == id);
+            document.getElementById('det-id').innerText = "#S-" + i.id;
+            document.getElementById('det-pelanggan').innerText = i.pelanggan;
+            document.getElementById('det-wa').innerText = i.no_hp;
+            document.getElementById('det-tipe').innerText = i.tipe;
+            document.getElementById('det-keluhan').innerText = i.keluhan;
+            document.getElementById('det-jasa').innerText = formatIDR(i.jasa);
+            document.getElementById('det-tgl').innerText = i.tgl.toLocaleDateString('id-ID');
+            
+            const statusEl = document.getElementById('det-status');
+            statusEl.innerText = i.status;
+            statusEl.className = `px-3 py-1 rounded-full text-[10px] font-bold uppercase status-${i.status.toLowerCase()}`;
+
+            const list = document.getElementById('det-parts-list');
+            list.innerHTML = '';
+            let totalPart = 0;
+            if(i.parts.length > 0) {
+                i.parts.forEach(p => {
+                    totalPart += p.modal;
+                    list.innerHTML += `<div class="flex justify-between items-center text-xs p-2 bg-slate-50 rounded-lg"><span>${p.nama}</span><span class="font-bold">${formatIDR(p.modal)}</span></div>`;
+                });
+            } else {
+                list.innerHTML = `<p class="text-[10px] text-slate-400 italic text-center py-2">Tidak ada penggantian sparepart</p>`;
+            }
+            document.getElementById('det-total').innerText = formatIDR(totalPart + i.jasa);
+            document.getElementById('detailModal').style.display = 'block';
         }
 
         function renderData() {
             const tb = document.getElementById('table-body');
             const rb = document.getElementById('report-body');
-            if(!tb || !rb) return;
-            tb.innerHTML = ''; rb.innerHTML = '';
+            const kb = document.getElementById('kontak-body');
+            if(!tb || !rb || !kb) return;
             
-            const pT = parseInt(document.getElementById('percent-toko').value);
-            const pX = parseInt(document.getElementById('percent-teknisi').value);
-            let sP=0, sS=0, sB=0, sG=0, tO=0, tM=0, tToko=0, tTek=0;
+            tb.innerHTML = ''; rb.innerHTML = ''; kb.innerHTML = '';
+            let stats = { t: dataServis.length, p: 0, s: 0, b: 0, g: 0, om: 0, mod: 0, tok: 0, tek: 0 };
 
             dataServis.forEach(i => {
-                if(i.status==='Diproses') sP++; if(i.status==='Selesai') sS++;
-                if(i.status==='Batal') sB++; if(i.status==='Gagal') sG++;
-                const total = i.modal_part + i.jasa;
+                if(i.status === 'Diproses') stats.p++;
+                if(i.status === 'Selesai') stats.s++;
+                if(i.status === 'Batal') stats.b++;
+                if(i.status === 'Gagal') stats.g++;
+                
+                const totalPart = i.parts.reduce((a, b) => a + b.modal, 0);
+                const tagihan = totalPart + i.jasa;
+
+                tb.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">${i.tipe}</div>
+                            <div class="text-[9px] text-slate-400 uppercase font-bold">${i.pelanggan}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-[9px] font-bold status-${i.status.toLowerCase()}">${i.status}</span>
+                        </td>
+                        <td class="px-6 py-4 font-bold text-slate-700">${formatIDR(tagihan)}</td>
+                        <td class="px-6 py-4 text-center space-x-1">
+                            <button onclick="viewDetail('${i.id}')" class="p-2 text-slate-300 hover:text-blue-600"><i class="fas fa-eye"></i></button>
+                            <button onclick="openEdit('${i.id}')" class="p-2 text-slate-300 hover:text-amber-500"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                `;
 
                 if(i.status === 'Diambil') {
-                    tO += total; tM += i.modal_part;
-                    const bT = (i.jasa * pT) / 100; const bX = (i.jasa * pX) / 100;
-                    tToko += bT; tTek += bX;
-                    rb.innerHTML += `<tr class="text-xs"><td class="px-6 py-4 font-bold">${i.pelanggan}<br><span class="font-normal opacity-50">${i.tipe}</span></td><td class="px-6 py-4 text-rose-500">${formatIDR(i.modal_part)}</td><td class="px-6 py-4">${formatIDR(i.jasa)}</td><td class="px-6 py-4 text-indigo-600 font-bold">${formatIDR(bT)}</td><td class="px-6 py-4 text-right text-orange-600 font-bold">${formatIDR(bX)}</td></tr>`;
+                    stats.om += tagihan; stats.mod += totalPart;
+                    const pT = (i.jasa * 60) / 100; const pX = (i.jasa * 40) / 100;
+                    stats.tok += pT; stats.tek += pX;
+                    rb.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-3 font-bold">${i.tipe}<br><span class="font-normal opacity-50">${i.pelanggan}</span></td>
+                            <td class="px-6 py-3">${formatIDR(totalPart)}</td>
+                            <td class="px-6 py-3 text-indigo-600 font-bold">${formatIDR(pT)}</td>
+                            <td class="px-6 py-3 text-right text-orange-600 font-bold">${formatIDR(pX)}</td>
+                        </tr>
+                    `;
                 }
-
-                tb.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-bold text-slate-800">${i.pelanggan}<br><span class="text-[10px] text-slate-500 uppercase">${i.tipe} - ${i.keluhan}</span></td><td class="px-6 py-4 text-slate-600">${i.no_hp}</td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-bold status-${i.status.toLowerCase()}">${i.status}</span></td><td class="px-6 py-4 font-bold">${formatIDR(total)}</td><td class="px-6 py-4 text-center"><button onclick="openEdit('${i.id}')" class="p-2 bg-slate-100 rounded-lg hover:bg-blue-600 hover:text-white transition"><i class="fas fa-edit"></i></button></td></tr>`;
             });
 
-            document.getElementById('stat-total').innerText = dataServis.length;
-            document.getElementById('stat-proses').innerText = sP;
-            document.getElementById('stat-selesai').innerText = sS;
-            document.getElementById('stat-batal').innerText = sB;
-            document.getElementById('stat-gagal').innerText = sG;
-            document.getElementById('stat-omzet-global').innerText = formatIDR(tO);
-            document.getElementById('rep-omzet').innerText = formatIDR(tO);
-            document.getElementById('rep-total-part').innerText = formatIDR(tM);
-            document.getElementById('rep-profit-toko').innerText = formatIDR(tToko);
-            document.getElementById('rep-profit-teknisi').innerText = formatIDR(tTek);
+            // Buku Kontak Logic
+            const unique = {};
+            dataServis.forEach(i => {
+                if(!unique[i.no_hp]) unique[i.no_hp] = { n: i.pelanggan, u: [i.tipe], id: i.id };
+                else if(!unique[i.no_hp].u.includes(i.tipe)) unique[i.no_hp].u.push(i.tipe);
+            });
+
+            Object.entries(unique).forEach(([phone, data]) => {
+                kb.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 font-bold text-slate-800">${data.n}</td>
+                        <td class="px-6 py-4 text-emerald-600 font-bold text-xs"><i class="fab fa-whatsapp mr-1"></i>${phone}</td>
+                        <td class="px-6 py-4"><div class="flex flex-wrap gap-1">${data.u.map(u => `<span class="bg-slate-100 text-[8px] px-1.5 py-0.5 rounded border border-slate-200">${u}</span>`).join('')}</div></td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="viewDetail('${data.id}')" class="text-blue-600 text-[10px] font-bold uppercase mr-3">History</button>
+                            <a href="https://wa.me/${phone.replace(/[^0-9]/g,'')}" target="_blank" class="text-green-600 text-[10px] font-bold uppercase">Chat</a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Dashboard Sync
+            document.getElementById('stat-total').innerText = stats.t;
+            document.getElementById('stat-proses').innerText = stats.p;
+            document.getElementById('stat-selesai').innerText = stats.s;
+            document.getElementById('stat-batal').innerText = stats.b;
+            document.getElementById('stat-gagal').innerText = stats.g;
+            document.getElementById('stat-omzet-global').innerText = formatIDR(stats.om);
+            document.getElementById('rep-omzet').innerText = formatIDR(stats.om);
+            document.getElementById('rep-total-part').innerText = formatIDR(stats.mod);
+            document.getElementById('rep-profit-toko').innerText = formatIDR(stats.tok);
+            document.getElementById('rep-profit-teknisi').innerText = formatIDR(stats.tek);
         }
 
         function filterTable() {
@@ -436,7 +517,13 @@
             }
         }
 
-        window.onload = checkAuth;
+        window.onload = () => {
+            if(localStorage.getItem('antero_auth_v2') === 'true') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                renderData();
+            }
+        };
     </script>
 </body>
 </html>
